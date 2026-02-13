@@ -25,8 +25,6 @@ export const requireAdmin = (req, res, next) => {
 		return res.status(401).json({ error: "Authorization token required" });
 	}
 
-	console.log("User role:", req.user.role); // Debugging line
-
 	if (req.user.role !== "admin") {
 		return res.status(403).json({ error: "Admin access required" });
 	}
