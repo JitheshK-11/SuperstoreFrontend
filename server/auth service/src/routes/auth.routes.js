@@ -17,5 +17,6 @@ router.post("/verify-otp", generalLimiter, validateRequest(verifyOtpSchema), aut
 router.post("/refresh", generalLimiter, requireAuth, validateRequest(refreshSchema), authController.refresh);
 router.post("/logout", generalLimiter, requireAuth, validateRequest(logoutSchema), authController.logout);
 router.get("/users", requireAuth, requireAdmin, authController.getAllUsers);
+router.get("/verify", requireAuth, authController.verifyAccess);
 
 export default router;

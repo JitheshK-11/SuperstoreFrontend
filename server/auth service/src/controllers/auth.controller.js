@@ -49,5 +49,9 @@ export const authController = {
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
+  },
+
+  verifyAccess: async (req, res) => {
+    res.json({ user: req.user });
   }
 };
