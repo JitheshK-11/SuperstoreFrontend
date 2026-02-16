@@ -1,45 +1,37 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import IntroScreen from './src/screen/IntroScreen';
+import LoginScreen from './src/screen/auth/LoginScreen';
+import HomeScreen from './src/screen/Home/HomeScreen';
+import RegisterScreen from './src/screen/auth/RegisterScreen';
+import CategoriesScreen from './src/screen/Categories/CategoriesScreen';
+import OrdersScreen from './src/screen/Orders/OrdersScreen';
+import ProfileScreen from './src/screen/Profile/ProfileScreen';
+import ProductDetailsScreen from './src/screen/Product/ProductDetailsScreen';
+import CartScreen from './src/screen/Cart/CartScreen';
+import CheckoutScreen from './src/screen/Checkout/CheckoutScreen';
+import { CartProvider } from './src/context/CartContext';
+const Stack = createNativeStackNavigator();
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <CartProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="IntroScreen" screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="IntroScreen" component={IntroScreen} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Categories" component={CategoriesScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="Checkout" component={CheckoutScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </CartProvider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
