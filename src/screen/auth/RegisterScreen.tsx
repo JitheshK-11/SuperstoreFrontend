@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   View,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,12 +17,10 @@ const RegisterScreen = () => {
 
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
-  const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [pincode, setPincode] = useState('');
 
-  // slide-in animation (same as login)
-  const translateY = useRef(new Animated.Value(80)).current;
+  const translateY = useRef(new Animated.Value(60)).current;
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -35,22 +34,19 @@ const RegisterScreen = () => {
     () =>
       name.trim().length < 2 ||
       mobile.length !== 10 ||
-      !email.includes('@') ||
       address.trim().length < 5 ||
       pincode.length !== 6,
-    [name, mobile, email, address, pincode],
+    [name, mobile,  address, pincode],
   );
 
   const handleRegister = () => {
     console.log({
       name,
       mobile,
-      email,
       address,
       pincode,
     });
 
-    // later backend integration
     navigation.navigate('Home');
   };
 
@@ -58,51 +54,52 @@ const RegisterScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
-        <Text style={styles.brand}>Smart Bazzar</Text>
+        <View style={styles.logoCircle}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>
+          Join Smart Bazzar and shop fresh groceries
+        </Text>
       </View>
 
-      {/* Center card */}
-      <View style={styles.centerWrapper}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
         <Animated.View
-          style={[
-            styles.card,
-            { transform: [{ translateY }] },
-          ]}
+          style={[styles.card, { transform: [{ translateY }] }]}
         >
-          <Text style={styles.inputLabel}>Full Name</Text>
+          {/* Full Name */}
+          <Text style={styles.label}>FULL NAME</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your name"
+            placeholder="Enter your full name"
             value={name}
             onChangeText={setName}
           />
 
-          <Text style={styles.inputLabel}>Mobile Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter mobile number"
-            keyboardType="number-pad"
-            maxLength={10}
-            value={mobile}
-            onChangeText={setMobile}
-          />
+          {/* Mobile */}
+          <Text style={styles.label}>MOBILE NUMBER</Text>
+          <View style={styles.inputRow}>
+            <Text style={styles.countryCode}>+91</Text>
+            <TextInput
+              style={styles.inputFlex}
+              placeholder="Enter mobile number"
+              keyboardType="number-pad"
+              maxLength={10}
+              value={mobile}
+              onChangeText={setMobile}
+            />
+          </View>
 
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="you@example.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-
-          <Text style={styles.inputLabel}>Address</Text>
+          {/* Address */}
+          <Text style={styles.label}>ADDRESS</Text>
           <TextInput
             style={[styles.input, styles.addressInput]}
             placeholder="House, Street, Area"
@@ -111,7 +108,8 @@ const RegisterScreen = () => {
             onChangeText={setAddress}
           />
 
-          <Text style={styles.inputLabel}>Pincode</Text>
+          {/* Pincode */}
+          <Text style={styles.label}>PINCODE</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter pincode"
@@ -121,12 +119,15 @@ const RegisterScreen = () => {
             onChangeText={setPincode}
           />
 
+          {/* Button */}
           <Pressable
             style={[styles.button, disabled && styles.buttonDisabled]}
             disabled={disabled}
             onPress={handleRegister}
           >
-            <Text style={styles.buttonText}>Create Account</Text>
+            <Text style={styles.buttonText}>
+              Create Account
+            </Text>
           </Pressable>
 
           <Pressable onPress={() => navigation.navigate('Login')}>
@@ -135,75 +136,111 @@ const RegisterScreen = () => {
             </Text>
           </Pressable>
         </Animated.View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 export default RegisterScreen;
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#DFF1EC',
+    backgroundColor: '#F4F5F3',
   },
 
   header: {
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 40,
   },
 
-  logoImage: {
-    width: 72,
-    height: 72,
-  },
-
-  brand: {
-    marginTop: 8,
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#177351',
-  },
-
-  centerWrapper: {
-    flex: 1,
+  logoCircle: {
+    backgroundColor: '#4F7D4F',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+  },
+
+  logo: {
+    width: 40,
+    height: 40,
+    tintColor: '#fff',
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginTop: 15,
+    color: '#1E1E1E',
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 5,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
 
   card: {
+    marginHorizontal: 20,
+    marginTop: 30,
     backgroundColor: '#fff',
     borderRadius: 25,
     padding: 20,
     elevation: 6,
   },
 
-  inputLabel: {
-    color: '#334155',
-    fontWeight: '600',
-    marginBottom: 6,
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6B7280',
+    marginBottom: 8,
   },
 
   input: {
-    height: 50,
-    borderRadius: 12,
+    height: 55,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#E5E7EB',
     paddingHorizontal: 15,
-    marginBottom: 14,
-    backgroundColor: '#ffffff',
+    marginBottom: 18,
+  },
+
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 15,
+    paddingHorizontal: 12,
+    height: 55,
+    marginBottom: 18,
+  },
+
+  inputFlex: {
+    flex: 1,
+  },
+
+  countryCode: {
+    fontWeight: '600',
+    marginRight: 10,
   },
 
   addressInput: {
-    height: 70,
+    height: 80,
     textAlignVertical: 'top',
   },
 
   button: {
-    backgroundColor: '#1E8F66',
-    borderRadius: 25,
-    paddingVertical: 14,
+    backgroundColor: '#4F7D4F',
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    marginTop: 10,
   },
 
   buttonDisabled: {
@@ -211,15 +248,16 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#ffffff',
-    fontWeight: '700',
+    color: '#fff',
     fontSize: 16,
+    fontWeight: '700',
   },
 
   link: {
     textAlign: 'center',
-    marginTop: 12,
-    color: '#0284c7',
+    marginTop: 15,
+    fontSize: 13,
+    color: '#2563EB',
     fontWeight: '600',
   },
 });

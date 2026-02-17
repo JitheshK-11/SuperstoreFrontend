@@ -34,195 +34,341 @@ export default function OrdersScreen() {
   const navigation = useNavigation<any>();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
-        <View>
-          <Text style={styles.brand}>Smart Bazzar</Text>
-          <Text style={styles.tagline}>Your recent orders</Text>
-        </View>
-      </View>
+    <View style={styles.mainContainer}>
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.sectionTitle}>Orders</Text>
-        {orders.map(item => (
-          <View key={item.id} style={styles.orderCard}>
-            <Image source={{ uri: item.image }} style={styles.orderImage} />
-            <View style={styles.orderBody}>
-              <Text style={styles.orderTitle}>{item.title}</Text>
-              <Text style={styles.orderDate}>{item.date}</Text>
-              <Text
-                style={[
-                  styles.orderStatus,
-                  item.status === 'Delivered'
-                    ? styles.delivered
-                    : item.status === 'Out for Delivery'
-                    ? styles.outForDelivery
-                    : styles.placed,
-                ]}
-              >
-                {item.status}
+      <SafeAreaView style={styles.safeAreaBottom} edges={['left', 'right', 'bottom']}>
+        
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerContent}>
+            <View style={styles.locationRow}>
+              <Image
+                source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/marker.png' }}
+                style={styles.locationIcon}
+              />
+              <View>
+                <Text style={styles.brandTitle}>Smart Bazzar</Text>
+                <Text style={styles.locationText}>
+                  B-12, Green Avenue, High Park
+                </Text>
+              </View>
+            </View>
+
+            <Image
+              source={{
+                uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
+              }}
+              style={styles.userAvatar}
+            />
+          </View>
+
+          {/* Search Visual */}
+          <View style={styles.searchBarVisual}>
+            <Image
+              source={{ uri: 'https://img.icons8.com/ios-glyphs/30/9ca3af/search--v1.png' }}
+              style={styles.searchIcon}
+            />
+            <Text style={styles.searchText}>Search orders...</Text>
+          </View>
+        </View>
+
+        {/* Orders List */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <Text style={styles.sectionTitle}>Recent Orders</Text>
+
+          {orders.map(item => (
+            <View key={item.id} style={styles.orderCard}>
+              <Image source={{ uri: item.image }} style={styles.orderImage} />
+
+              <View style={styles.orderBody}>
+                <Text style={styles.orderTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+
+                <Text style={styles.orderDate}>{item.date}</Text>
+
+                <Text
+                  style={[
+                    styles.orderStatus,
+                    item.status === 'Delivered'
+                      ? styles.delivered
+                      : item.status === 'Out for Delivery'
+                      ? styles.outForDelivery
+                      : styles.placed,
+                  ]}
+                >
+                  {item.status}
+                </Text>
+              </View>
+
+              <Text style={styles.arrow}>›</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Bottom Navigation */}
+        <View style={styles.bottomNavWrapper}>
+          <View style={styles.bottomNav}>
+            
+            <Pressable
+              style={styles.navItem}
+              onPress={() => navigation.navigate('Home')}
+            >
+              <Image
+                source={{
+                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/home.png',
+                }}
+                style={styles.navIconImage}
+              />
+              <Text style={styles.navText}>Home</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.navItem}
+              onPress={() => navigation.navigate('Categories')}
+            >
+              <Image
+                source={{
+                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/categorize.png',
+                }}
+                style={styles.navIconImage}
+              />
+              <Text style={styles.navText}>Categories</Text>
+            </Pressable>
+
+            <View style={styles.navItem}>
+              <Image
+                source={{
+                  uri: 'https://img.icons8.com/fluency-systems-filled/96/1E8F66/purchase-order.png',
+                }}
+                style={styles.navIconImage}
+              />
+              <Text style={[styles.navText, styles.navActive]}>
+                Orders
               </Text>
             </View>
-          </View>
-        ))}
-      </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/home.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Home</Text>
-        </Pressable>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Categories')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/categorize.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Categories</Text>
-        </Pressable>
-        <View style={styles.navItem}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-filled/96/1E8F66/purchase-order.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={[styles.navText, styles.navActive]}>Orders</Text>
+            <Pressable
+              style={styles.navItem}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <Image
+                source={{
+                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/user-male-circle.png',
+                }}
+                style={styles.navIconImage}
+              />
+              <Text style={styles.navText}>Profile</Text>
+            </Pressable>
+
+          </View>
         </View>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/user-male-circle.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Profile</Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  mainContainer: {
     flex: 1,
-    backgroundColor: '#DFF1EC',
+    backgroundColor: '#1E8F66',
   },
-  header: {
+
+  safeAreaTop: {
+    flex: 0,
+    backgroundColor: '#1E8F66',
+  },
+
+  safeAreaBottom: {
+    flex: 1,
+    backgroundColor: '#F4F5F3',
+  },
+
+  headerContainer: {
+    backgroundColor: '#1E8F66',
+    paddingHorizontal: 16,
+    paddingBottom: 22,
+    paddingTop: 8,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 8,
+    flex: 1,
   },
-  logoImage: {
-    width: 54,
-    height: 54,
-    marginRight: 10,
+
+  locationIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
   },
-  brand: {
-    fontSize: 24,
+
+  brandTitle: {
+    fontSize: 18,
     fontWeight: '800',
-    color: '#177351',
+    color: '#ffffff',
   },
-  tagline: {
-    marginTop: 2,
-    fontSize: 13,
-    color: '#4b5563',
+
+  locationText: {
+    fontSize: 12,
+    color: '#E6F4EF',
     fontWeight: '500',
   },
+
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+
+  searchBarVisual: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  searchIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 8,
+  },
+
+  searchText: {
+    color: '#9ca3af',
+    fontSize: 14,
+  },
+
   scrollContent: {
-    paddingHorizontal: 14,
-    paddingTop: 4,
-    paddingBottom: 140,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 120,
   },
+
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#177351',
-    marginBottom: 12,
+    marginBottom: 16,
   },
+
   orderCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5f2ed',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 16,
     flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 3,
   },
+
   orderImage: {
-    width: 74,
-    height: 74,
-    borderRadius: 10,
-    marginRight: 10,
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 14,
   },
+
   orderBody: {
     flex: 1,
-    justifyContent: 'center',
   },
+
   orderTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1f2937',
+    marginBottom: 4,
   },
+
   orderDate: {
-    marginTop: 4,
     fontSize: 12,
     color: '#6b7280',
+    marginBottom: 8,
   },
+
   orderStatus: {
-    marginTop: 6,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
     fontSize: 11,
     fontWeight: '700',
+    textTransform: 'uppercase',
+    alignSelf: 'flex-start',
   },
+
   delivered: {
     backgroundColor: '#dcfce7',
     color: '#166534',
   },
+
   outForDelivery: {
-    backgroundColor: '#fef3c7',
-    color: '#92400e',
+    backgroundColor: '#fef9c3',
+    color: '#854d0e',
   },
+
   placed: {
-    backgroundColor: '#e0f2fe',
-    color: '#075985',
+    backgroundColor: '#eff6ff',
+    color: '#1d4ed8',
   },
-  bottomNav: {
+
+  arrow: {
+    fontSize: 24,
+    color: '#d1d5db',
+    marginLeft: 6,
+  },
+
+  bottomNavWrapper: {
     position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 10,
+    left: 0,
+    right: 0,
+    bottom: 20,
+    alignItems: 'center',
+  },
+
+  bottomNav: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#dceee8',
+    width: '92%',
+    borderRadius: 24,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingVertical: 12,
     elevation: 8,
   },
+
   navItem: {
     alignItems: 'center',
   },
+
   navIconImage: {
     width: 24,
     height: 24,
     marginBottom: 4,
   },
+
   navText: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: 11,
+    color: '#9ca3af',
     fontWeight: '500',
   },
+
   navActive: {
     color: '#1E8F66',
     fontWeight: '700',

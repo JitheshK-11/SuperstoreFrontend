@@ -1,21 +1,40 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const App = () => {
+import HomeScreen from './src/screen/Home/HomeScreen';
+import LoginScreen from './src/screen/auth/LoginScreen';
+import RegisterScreen from './src/screen/auth/RegisterScreen';
+import CartScreen from './src/screen/Cart/CartScreen';
+import CategoriesScreen from './src/screen/Categories/CategoriesScreen';
+import OrdersScreen from './src/screen/Orders/OrdersScreen';
+import { CartProvider } from './src/context/CartContext';
+import ProfileScreen from './src/screen/Profile/ProfileScreen';
+import ProductDetailsScreen from './src/screen/Product/ProductDetailsScreen';
+
+
+const Stack = createNativeStackNavigator();
+
+export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>App</Text>
-    </View>
-  )
+    <CartProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Login"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="Categories" component={CategoriesScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </CartProvider>
+  );
 }
-
-export default App
-
-const styles = StyleSheet.create({
-  container:{
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center',
-    backgroundColor:'white',
-  }
-})
