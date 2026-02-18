@@ -1,135 +1,202 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  TextInput,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../../context/CartContext';
-
-type ProductType = {
-  id: string;
-  name: string;
-  image: string;
-  price: string;
-  quantity?: number;
-};
-
-const addresses = [
-  {
-    id: '1',
-    label: 'Home',
-    detail: '14/33, near vaibhav nilaya, Bengaluru - 560037',
-  },
-  {
-    id: '2',
-    label: 'Work',
-    detail: 'IT Park Road, Whitefield, Bengaluru - 560066',
-  },
-];
-
-const paymentModes = ['UPI', 'Cash on Delivery', 'Credit / Debit Card'];
 
 export default function CheckoutScreen() {
   const navigation = useNavigation<any>();
-  const route = useRoute<any>();
-  const { items } = useCart();
-  const singleProduct: ProductType | undefined = route.params?.product;
+  const { items, clearCart } = useCart();
 
-  const [selectedAddress, setSelectedAddress] = useState('1');
-  const [selectedPayment, setSelectedPayment] = useState('UPI');
+  const [selectedAddress, setSelectedAddress] = useState('home');
+  const [selectedPayment, setSelectedPayment] = useState('upi');
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
 
-  const checkoutItems: ProductType[] = useMemo(() => {
-    if (singleProduct) {
-      return [{ ...singleProduct, quantity: 1 }];
+  const subtotal = useMemo(() => {
+    return items.reduce((sum: number, item: any) => {
+      const value = Number(item.price.replace(/[^0-9.]/g, '')) || 0;
+      return sum + value * item.quantity;
+    }, 0);
+  }, [items]);
+
+  const deliveryFee = subtotal > 0 ? 25 : 0;
+  const total = subtotal + deliveryFee - discount;
+
+  const applyPromo = () => {
+    if (promoCode.trim().toUpperCase() === 'SAVE50') {
+      setDiscount(50);
+      Alert.alert('Promo Applied', '₹50 discount applied!');
+    } else {
+      setDiscount(0);
+      Alert.alert('Invalid Code');
     }
-    return items;
-  }, [items, singleProduct]);
+  };
 
-  const itemCount = checkoutItems.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+  const placeOrder = () => {
+    if (items.length === 0) {
+      Alert.alert('Cart is empty');
+      return;
+    }
 
-  const subtotal = checkoutItems.reduce((sum, item) => {
-    const value = Number(item.price.replace(/[^0-9.]/g, '')) || 0;
-    return sum + value * (item.quantity ?? 1);
-  }, 0);
-  const deliveryFee = subtotal > 0 ? 20 : 0;
-  const total = subtotal + deliveryFee;
+    if (!selectedAddress) {
+      Alert.alert('Select delivery address');
+      return;
+    }
+
+    if (!selectedPayment) {
+      Alert.alert('Select payment method');
+      return;
+    }
+
+    clearCart();
+    Alert.alert('Success', 'Order placed successfully!');
+    navigation.replace('Orders');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#1E8F66" />
+
+      {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>Back</Text>
+        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={styles.backText}>‹</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <View>
+          <Text style={styles.headerTitle}>Checkout</Text>
+          <Text style={styles.headerSub}>Confirm your order details</Text>
+        </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.sectionCard}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Address */}
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Delivery Address</Text>
-          {addresses.map(addr => (
+
+          {['home', 'work'].map(type => (
             <Pressable
-              key={addr.id}
+              key={type}
+              onPress={() => setSelectedAddress(type)}
               style={[
-                styles.choiceRow,
-                selectedAddress === addr.id ? styles.choiceRowActive : null,
+                styles.optionBox,
+                selectedAddress === type && styles.optionActive,
               ]}
-              onPress={() => setSelectedAddress(addr.id)}
             >
-              <Text style={styles.choiceTitle}>{addr.label}</Text>
-              <Text style={styles.choiceDetail}>{addr.detail}</Text>
+              <Text style={styles.optionTitle}>
+                {type === 'home' ? 'Home' : 'Work'}
+              </Text>
+              <Text style={styles.optionDetail}>
+                {type === 'home'
+                  ? '123 Green Valley Road'
+                  : '456 Business Park Avenue'}
+              </Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={styles.sectionCard}>
+        {/* Payment */}
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          {paymentModes.map(mode => (
+
+          {['upi', 'card', 'cod'].map(mode => (
             <Pressable
               key={mode}
-              style={[
-                styles.paymentRow,
-                selectedPayment === mode ? styles.choiceRowActive : null,
-              ]}
               onPress={() => setSelectedPayment(mode)}
+              style={[
+                styles.optionBox,
+                selectedPayment === mode && styles.optionActive,
+              ]}
             >
-              <Text style={styles.paymentText}>{mode}</Text>
+              <Text style={styles.optionTitle}>
+                {mode === 'upi'
+                  ? 'UPI'
+                  : mode === 'card'
+                  ? 'Credit / Debit Card'
+                  : 'Cash on Delivery'}
+              </Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={styles.sectionCard}>
+        {/* Promo Code */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Apply Coupon</Text>
+
+          <View style={styles.promoRow}>
+            <TextInput
+              placeholder="Enter promo code"
+              value={promoCode}
+              onChangeText={setPromoCode}
+              style={styles.promoInput}
+            />
+            <Pressable style={styles.applyBtn} onPress={applyPromo}>
+              <Text style={styles.applyText}>Apply</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Order Summary */}
+        <View style={styles.card}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          {checkoutItems.length === 0 ? (
-            <Text style={styles.emptyText}>No items selected.</Text>
-          ) : (
-            checkoutItems.map(item => (
-              <View key={item.id} style={styles.summaryRow}>
-                <Text style={styles.summaryName}>{item.name}</Text>
-                <Text style={styles.summaryQty}>x{item.quantity ?? 1}</Text>
-                <Text style={styles.summaryPrice}>{item.price}</Text>
-              </View>
-            ))
+
+          {items.map((item: any) => (
+            <View key={item.id} style={styles.summaryRow}>
+              <Text style={styles.summaryName}>
+                {item.name} x{item.quantity}
+              </Text>
+              <Text style={styles.summaryPrice}>{item.price}</Text>
+            </View>
+          ))}
+
+          <View style={styles.divider} />
+
+          <View style={styles.rowBetween}>
+            <Text>Subtotal</Text>
+            <Text>₹ {subtotal.toFixed(0)}</Text>
+          </View>
+
+          <View style={styles.rowBetween}>
+            <Text>Delivery Fee</Text>
+            <Text>₹ {deliveryFee}</Text>
+          </View>
+
+          {discount > 0 && (
+            <View style={styles.rowBetween}>
+              <Text>Discount</Text>
+              <Text style={{ color: 'red' }}>- ₹ {discount}</Text>
+            </View>
           )}
+
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Items ({itemCount})</Text>
-            <Text style={styles.totalValue}>Rs {subtotal.toFixed(0)}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Delivery Fee</Text>
-            <Text style={styles.totalValue}>Rs {deliveryFee.toFixed(0)}</Text>
-          </View>
-          <View style={[styles.totalRow, styles.totalStrongRow]}>
-            <Text style={styles.totalStrongLabel}>Total Payable</Text>
-            <Text style={styles.totalStrongValue}>Rs {total.toFixed(0)}</Text>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>
+              ₹ {total.toFixed(0)}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
+      {/* Footer */}
       <View style={styles.footer}>
         <View>
-          <Text style={styles.payLabel}>Payable Amount</Text>
-          <Text style={styles.payValue}>Rs {total.toFixed(0)}</Text>
+          <Text style={styles.footerLabel}>Total Payable</Text>
+          <Text style={styles.footerTotal}>
+            ₹ {total.toFixed(0)}
+          </Text>
         </View>
-        <Pressable style={styles.placeBtn}>
-          <Text style={styles.placeBtnText}>Place Order</Text>
+
+        <Pressable style={styles.placeBtn} onPress={placeOrder}>
+          <Text style={styles.placeText}>Place Order</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -137,172 +204,189 @@ export default function CheckoutScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#DFF1EC',
-  },
+  safeArea: { flex: 1, backgroundColor: '#F4F5F3' },
+
   header: {
+    backgroundColor: '#1E8F66',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 8,
   },
+
   backBtn: {
+    width: 36,
+    height: 36,
     backgroundColor: '#ffffff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#dceee8',
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    marginRight: 10,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
+
   backText: {
-    color: '#177351',
+    fontSize: 20,
     fontWeight: '700',
+    color: '#1E8F66',
   },
+
   headerTitle: {
-    fontSize: 24,
-    color: '#177351',
-    fontWeight: '800',
-  },
-  scrollContent: {
-    paddingHorizontal: 14,
-    paddingBottom: 104,
-  },
-  sectionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e5f2ed',
-    padding: 12,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#177351',
-    marginBottom: 8,
-  },
-  choiceRow: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
-  },
-  choiceRowActive: {
-    borderColor: '#1E8F66',
-    backgroundColor: '#f0fdf4',
-  },
-  choiceTitle: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
   },
-  choiceDetail: {
-    marginTop: 4,
-    color: '#6b7280',
+
+  headerSub: {
     fontSize: 12,
+    color: '#E6F4F1',
   },
-  paymentRow: {
+
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 120,
+  },
+
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 3,
+  },
+
+  sectionTitle: {
+    fontWeight: '700',
+    marginBottom: 10,
+    fontSize: 16,
+  },
+
+  optionBox: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
+    borderColor: '#E5E7EB',
     padding: 12,
+    borderRadius: 12,
     marginBottom: 8,
   },
-  paymentText: {
-    fontSize: 14,
+
+  optionActive: {
+    borderColor: '#1E8F66',
+    backgroundColor: '#E6F4F1',
+  },
+
+  optionTitle: {
     fontWeight: '600',
-    color: '#1f2937',
   },
-  emptyText: {
-    color: '#6b7280',
+
+  optionDetail: {
+    fontSize: 12,
+    color: '#6B7280',
   },
-  summaryRow: {
+
+  promoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  summaryName: {
+
+  promoInput: {
     flex: 1,
-    color: '#374151',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  summaryQty: {
-    width: 28,
-    textAlign: 'center',
-    color: '#6b7280',
-  },
-  summaryPrice: {
-    width: 70,
-    textAlign: 'right',
-    color: '#1f2937',
-    fontWeight: '700',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-  },
-  totalLabel: {
-    color: '#6b7280',
-  },
-  totalValue: {
-    color: '#374151',
-    fontWeight: '700',
-  },
-  totalStrongRow: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  totalStrongLabel: {
-    color: '#111827',
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  totalStrongValue: {
-    color: '#111827',
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  footer: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#dceee8',
+    backgroundColor: '#F4F5F3',
+    borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
+  },
+
+  applyBtn: {
+    marginLeft: 8,
+    backgroundColor: '#1E8F66',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+
+  applyText: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+
+  summaryName: {
+    color: '#374151',
+  },
+
+  summaryPrice: {
+    fontWeight: '700',
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 8,
+  },
+
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+
+  totalRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  totalLabel: {
+    fontWeight: '800',
+    fontSize: 16,
+  },
+
+  totalValue: {
+    fontWeight: '800',
+    fontSize: 18,
+    color: '#1E8F66',
+  },
+
+  footer: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    elevation: 10,
   },
-  payLabel: {
-    color: '#6b7280',
+
+  footerLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    color: '#6B7280',
   },
-  payValue: {
-    color: '#1f2937',
-    fontSize: 18,
+
+  footerTotal: {
+    fontSize: 20,
     fontWeight: '800',
   },
+
   placeBtn: {
     backgroundColor: '#1E8F66',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 14,
   },
-  placeBtnText: {
+
+  placeText: {
     color: '#ffffff',
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });

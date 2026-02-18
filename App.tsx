@@ -11,6 +11,8 @@ import OrdersScreen from './src/screen/Orders/OrdersScreen';
 import { CartProvider } from './src/context/CartContext';
 import ProfileScreen from './src/screen/Profile/ProfileScreen';
 import ProductDetailsScreen from './src/screen/Product/ProductDetailsScreen';
+import SplashScreen from './src/screen/IntroScreen';
+
 
 
 const Stack = createNativeStackNavigator();
@@ -20,11 +22,11 @@ export default function App() {
     <CartProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName="SplashScreen"
           screenOptions={{
             headerShown: false,
           }}
-        >
+        ><Stack.Screen name="SplashScreen" component={SplashScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />

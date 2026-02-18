@@ -1,219 +1,295 @@
-import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Pressable,
+  ScrollView,
+  TextInput,
+  StatusBar,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
-const categoryBlocks = [
+const { width } = Dimensions.get('window');
+
+const categories = [
   {
     id: '1',
-    title: 'Dairy Items',
-    subtitle: 'Milk, curd, paneer',
+    title: 'Fruits & Vegetables',
+    subtitle: 'Fresh & Organic',
     image:
-      'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1759508858607-d2cb26efdbcc',
   },
   {
     id: '2',
     title: 'Vegetables',
-    subtitle: 'Farm fresh greens',
+    subtitle: 'Farm Fresh',
     image:
-      'https://images.unsplash.com/photo-1518843875459-f738682238a6?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1741515044901-58696421d24a',
   },
   {
     id: '3',
-    title: 'Stationery',
-    subtitle: 'Pens, notebooks, files',
+    title: 'Dairy & Eggs',
+    subtitle: '100+ Products',
     image:
-      'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1771255217872-99fe6c876e45',
   },
   {
     id: '4',
-    title: 'Fruits',
-    subtitle: 'Seasonal and fresh',
+    title: 'Bakery & Bread',
+    subtitle: 'Freshly Baked',
     image:
-      'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1767065885755-58ee6202ae74',
   },
   {
     id: '5',
-    title: 'Bakery',
-    subtitle: 'Bread and snacks',
+    title: 'Meat & Seafood',
+    subtitle: 'Premium Quality',
     image:
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1762088208244-dde4e8b10047',
   },
   {
     id: '6',
     title: 'Household',
-    subtitle: 'Daily cleaning needs',
+    subtitle: 'Home Essentials',
     image:
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=70',
+      'https://images.unsplash.com/photo-1758887262204-a49092d85f15',
   },
+];
+
+const filters = [
+  'All',
+  'Fruits',
+  'Vegetables',
+  'Dairy',
+  'Bakery',
+  'Household',
 ];
 
 export default function CategoriesScreen() {
   const navigation = useNavigation<any>();
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [search, setSearch] = useState('');
+
+  const filteredCategories = categories.filter(cat =>
+    cat.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1E8F66" />
+
+      {/* HEADER */}
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
-        <View>
-          <Text style={styles.brand}>Smart Bazzar</Text>
-          <Text style={styles.tagline}>Browse by category</Text>
+        <View style={styles.headerTop}>
+          <Pressable onPress={() => navigation.goBack()}>
+            <View style={styles.backBtn}>
+              <Text style={{ color: '#1E8F66' }}>←</Text>
+            </View>
+          </Pressable>
+
+          <View>
+            <Text style={styles.headerTitle}>Categories</Text>
+            <Text style={styles.headerSub}>
+              Browse by category
+            </Text>
+          </View>
+        </View>
+
+        {/* SEARCH */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search categories..."
+            placeholderTextColor="#9CA3AF"
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+          />
         </View>
       </View>
 
+      {/* FILTER CHIPS */}
       <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginTop: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
       >
-        <Text style={styles.sectionTitle}>All Categories</Text>
-        <View style={styles.grid}>
-          {categoryBlocks.map(item => (
-            <View key={item.id} style={styles.card}>
-              <Image source={{ uri: item.image }} style={styles.cardImage} />
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-            </View>
-          ))}
-        </View>
+        {filters.map(item => (
+          <Pressable
+            key={item}
+            onPress={() => setActiveFilter(item)}
+            style={[
+              styles.chip,
+              activeFilter === item && styles.activeChip,
+            ]}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                activeFilter === item &&
+                  styles.activeChipText,
+              ]}
+            >
+              {item}
+            </Text>
+          </Pressable>
+        ))}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/home.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Home</Text>
-        </Pressable>
-        <View style={styles.navItem}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-filled/96/1E8F66/categorize.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={[styles.navText, styles.navActive]}>Categories</Text>
-        </View>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Orders')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/purchase-order.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Orders</Text>
-        </Pressable>
-        <Pressable style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <Image
-            source={{ uri: 'https://img.icons8.com/fluency-systems-regular/96/user-male-circle.png' }}
-            style={styles.navIconImage}
-          />
-          <Text style={styles.navText}>Profile</Text>
-        </Pressable>
-      </View>
+      {/* CATEGORY GRID */}
+      <FlatList
+        data={filteredCategories}
+        keyExtractor={item => item.id}
+        numColumns={2}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 100,
+        }}
+        columnWrapperStyle={{
+          justifyContent: 'space-between',
+        }}
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.card}
+            onPress={() =>
+              navigation.navigate('CategoryProducts', {
+                category: item.title,
+              })
+            }
+          >
+            <Image
+              source={{ uri: item.image }}
+              style={styles.cardImage}
+            />
+
+            <View style={styles.overlay} />
+
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.cardTitle}>
+                {item.title}
+              </Text>
+              <Text style={styles.cardSubtitle}>
+                {item.subtitle}
+              </Text>
+            </View>
+          </Pressable>
+        )}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: '#DFF1EC',
+    backgroundColor: '#F4F5F3',
   },
+
   header: {
+    backgroundColor: '#1E8F66',
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+
+  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 8,
+    marginBottom: 16,
   },
-  logoImage: {
-    width: 54,
-    height: 54,
+
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+
+  headerSub: {
+    color: '#E6F4F1',
+    fontSize: 13,
+  },
+
+  searchContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    justifyContent: 'center',
+  },
+
+  searchInput: {
+    fontSize: 14,
+  },
+
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     marginRight: 10,
   },
-  brand: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#177351',
+
+  activeChip: {
+    backgroundColor: '#1E8F66',
   },
-  tagline: {
-    marginTop: 2,
+
+  chipText: {
+    color: '#1F2937',
     fontSize: 13,
-    color: '#4b5563',
-    fontWeight: '500',
   },
-  scrollContent: {
-    paddingHorizontal: 14,
-    paddingBottom: 140,
-    paddingTop: 4,
+
+  activeChipText: {
+    color: '#FFFFFF',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#177351',
-    marginBottom: 12,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
+
   card: {
-    width: '48%',
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    marginBottom: 12,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#e5f2ed',
+    width: (width - 48) / 2,
+    height: 140,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
   },
+
   cardImage: {
     width: '100%',
-    height: 100,
-    borderRadius: 10,
-    marginBottom: 8,
+    height: '100%',
   },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1f2937',
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  cardSubtitle: {
-    marginTop: 2,
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  bottomNav: {
+
+  cardTextContainer: {
     position: 'absolute',
-    left: 12,
-    right: 12,
     bottom: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#dceee8',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 10,
-    paddingBottom: 10,
-    elevation: 8,
+    left: 10,
   },
-  navItem: {
-    alignItems: 'center',
-  },
-  navIconImage: {
-    width: 24,
-    height: 24,
-    marginBottom: 4,
-  },
-  navText: {
-    fontSize: 13,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  navActive: {
-    color: '#1E8F66',
+
+  cardTitle: {
+    color: '#FFFFFF',
     fontWeight: '700',
+    fontSize: 14,
+  },
+
+  cardSubtitle: {
+    color: '#E6F4F1',
+    fontSize: 11,
   },
 });

@@ -1,270 +1,345 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
   View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Animated,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LoginScreen = () => {
   const navigation = useNavigation<any>();
 
+  const [step, setStep] = useState<'mobile' | 'otp'>('mobile');
   const [mobile, setMobile] = useState('');
-  const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const translateY = useRef(new Animated.Value(60)).current;
+  const slideAnim = useRef(new Animated.Value(60)).current;
+  const otpRefs = useRef<Array<TextInput | null>>([]);
+
 
   useEffect(() => {
-    Animated.timing(translateY, {
+    Animated.timing(slideAnim, {
       toValue: 0,
       duration: 500,
       useNativeDriver: true,
     }).start();
   }, []);
 
-  const handleSendOtp = () => {
-    if (mobile.length === 10) {
-      setShowOtp(true);
-    }
+  const isMobileValid = mobile.length === 10;
+  const isOtpValid = otp.length === 6;
+
+  const handleGetOtp = () => {
+    if (!isMobileValid) return;
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setStep('otp');
+    }, 800);
   };
 
-  const handleLogin = () => {
-    if (otp.length === 6) {
-      navigation.navigate('Home' as never);
-    }
+  const handleVerify = () => {
+    if (!isOtpValid) return;
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigation.replace('Home');
+    }, 800);
+  };
+
+  const handleGoToRegister = () => {
+    navigation.navigate('Register');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Header Section */}
+    <SafeAreaView style={styles.container}>
+      {/* HEADER */}
       <View style={styles.header}>
-        <View style={styles.logoCircle}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+        <View style={styles.logoOuter}>
+          <View style={styles.logoInner}>
+            <Icon name="shopping-bag" size={28} color="#e2d9d9" />
+          </View>
         </View>
-
         <Text style={styles.title}>Smart Bazzar</Text>
         <Text style={styles.subtitle}>
           Fresh groceries at your doorstep
         </Text>
       </View>
 
-      {/* Animated Card */}
+      {/* CARD */}
       <Animated.View
-        style={[styles.card, { transform: [{ translateY }] }]}
+        style={[styles.card, { transform: [{ translateY: slideAnim }] }]}
       >
-        <Text style={styles.label}>MOBILE NUMBER</Text>
-
-        {/* Input Row */}
-        <View style={styles.inputRow}>
-          <Text style={styles.countryCode}>+91</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your mobile number"
-            keyboardType="number-pad"
-            maxLength={10}
-            value={mobile}
-            onChangeText={setMobile}
-          />
-        </View>
-
-        {!showOtp ? (
-          <Pressable
-            style={[
-              styles.button,
-              mobile.length !== 10 && styles.buttonDisabled,
-            ]}
-            disabled={mobile.length !== 10}
-            onPress={handleSendOtp}
-          >
-            <Text style={styles.buttonText}>Get OTP  ›</Text>
-          </Pressable>
-        ) : (
+        {step === 'mobile' ? (
           <>
-            <Text style={styles.label}>ENTER OTP</Text>
+            <Text style={styles.label}>MOBILE NUMBER</Text>
 
-            <TextInput
-              style={styles.otpInput}
-              placeholder="Enter 6 digit OTP"
-              keyboardType="number-pad"
-              maxLength={6}
-              value={otp}
-              onChangeText={setOtp}
-            />
+            <View style={styles.inputRow}>
+              <Text style={styles.country}>+91</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your mobile number"
+                keyboardType="number-pad"
+                maxLength={10}
+                value={mobile}
+                onChangeText={(v) =>
+                  setMobile(v.replace(/[^0-9]/g, ''))
+                }
+              />
+            </View>
 
             <Pressable
               style={[
                 styles.button,
-                otp.length !== 6 && styles.buttonDisabled,
+                !isMobileValid && styles.disabled,
               ]}
-              disabled={otp.length !== 6}
-              onPress={handleLogin}
+              onPress={handleGetOtp}
+              disabled={!isMobileValid || loading}
+            >
+              {loading ? (
+                <Text style={styles.buttonText}>Loading...</Text>
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Get OTP</Text>
+                  <Icon name="arrow-right" size={18} color="#fff" />
+                </>
+              )}
+            </Pressable>
+
+            <Text style={styles.helper}>
+              We'll send you a one-time password
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.label}>ENTER OTP</Text>
+            <Text style={styles.helper}>
+              Sent to +91 {mobile}{' '}
+              <Text
+                style={styles.change}
+                onPress={() => {
+                  setStep('mobile');
+                  setOtp('');
+                }}
+              >
+                Change
+              </Text>
+            </Text>
+
+                      <View style={styles.otpRow}>
+              {[...Array(6)].map((_, index) => (
+                <TextInput
+                  key={index}
+                  ref={(ref) => {
+                    otpRefs.current[index] = ref;
+                  }}
+                  style={[
+                    styles.otpBox,
+                    otp[index] && styles.otpFilled,
+                  ]}
+                  keyboardType="number-pad"
+                  maxLength={1}
+                  value={otp[index] || ''}
+                  onChangeText={(value) => {
+                    const otpArr = otp.split('');
+
+                    otpArr[index] = value;
+                    setOtp(otpArr.join(''));
+
+                    // 👉 Move to next box automatically
+                    if (value && index < 5) {
+                      otpRefs.current[index + 1]?.focus();
+                    }
+                  }}
+                  onKeyPress={({ nativeEvent }) => {
+                    // 👉 Move back on backspace
+                    if (
+                      nativeEvent.key === 'Backspace' &&
+                      !otp[index] &&
+                      index > 0
+                    ) {
+                      otpRefs.current[index - 1]?.focus();
+                    }
+                  }}
+                />
+              ))}
+            </View>
+
+
+            <Pressable
+              style={[
+                styles.button,
+                !isOtpValid && styles.disabled,
+              ]}
+              onPress={handleVerify}
+              disabled={!isOtpValid || loading}
             >
               <Text style={styles.buttonText}>
                 Verify & Login
               </Text>
+              <Icon name="check" size={18} color="#fff" />
             </Pressable>
+
+            <Text style={styles.helper}>
+              Didn’t receive code?{' '}
+              <Text style={styles.change}>Resend OTP</Text>
+            </Text>
           </>
         )}
 
-        <Text style={styles.helperText}>
-          We'll send you a one-time password
-        </Text>
-
-        <Pressable onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.link}>
-            If you don't have account, Register here
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            If you don’t have an account,{' '}
+            <Text
+              style={styles.register}
+              onPress={handleGoToRegister}
+            >
+              Register here
+            </Text>
           </Text>
-        </Pressable>
+        </View>
       </Animated.View>
 
-      {/* Bottom Illustration */}
-      <View style={styles.bottomImageContainer}>
-        <Image
-          source={require('../../assets/grocery.png')} // add grocery image in assets
-          style={styles.bottomImage}
-          resizeMode="contain"
-        />
-      </View>
+      <Text style={styles.trust}>🔒 Secure & Fast Login</Text>
     </SafeAreaView>
   );
 };
 
 export default LoginScreen;
-
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: '#F4F5F3',
-  },
-
-  header: {
     alignItems: 'center',
-    marginTop: 40,
   },
-
-  logoCircle: {
-    backgroundColor: '#4F7D4F',
+  header: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+  logoOuter: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    alignItems: 'center',
+    backgroundColor: '#fff',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-
-  logo: {
-    width: 40,
-    height: 40,
-    tintColor: '#fff',
+  logoInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#4F7D4F',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
   title: {
     fontSize: 26,
     fontWeight: '700',
-    marginTop: 15,
-    color: '#1E1E1E',
+    marginTop: 12,
+    color: '#2C5530',
   },
-
   subtitle: {
     fontSize: 14,
     color: '#6B7280',
-    marginTop: 5,
   },
-
   card: {
-    marginHorizontal: 20,
-    marginTop: 30,
+    width: '90%',
     backgroundColor: '#fff',
-    borderRadius: 25,
-    padding: 20,
+    borderRadius: 30,
+    padding: 22,
+    marginTop: 30,
     elevation: 6,
   },
-
   label: {
     fontSize: 12,
     fontWeight: '700',
     color: '#6B7280',
     marginBottom: 10,
   },
-
   inputRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 15,
-    paddingHorizontal: 12,
+    borderRadius: 16,
     height: 55,
+    alignItems: 'center',
+    paddingHorizontal: 12,
     marginBottom: 20,
   },
-
-  countryCode: {
+  country: {
     fontWeight: '600',
     marginRight: 10,
   },
-
   input: {
     flex: 1,
   },
-
-  otpInput: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 15,
-    paddingHorizontal: 15,
-    height: 55,
-    marginBottom: 20,
-  },
-
   button: {
-    backgroundColor: '#4F7D4F',
+    flexDirection: 'row',
+    gap: 8,
     height: 55,
     borderRadius: 30,
-    alignItems: 'center',
+    backgroundColor: '#4F7D4F',
     justifyContent: 'center',
-    marginBottom: 15,
+    alignItems: 'center',
   },
-
-  buttonDisabled: {
+  disabled: {
     opacity: 0.5,
   },
-
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
-
-  helperText: {
+  helper: {
+    marginTop: 12,
     textAlign: 'center',
     fontSize: 12,
     color: '#6B7280',
   },
-
-  link: {
+  change: {
+    color: '#4F7D4F',
+    fontWeight: '600',
+  },
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  otpBox: {
+    width: 45,
+    height: 55,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
     textAlign: 'center',
-    marginTop: 5,
+    fontSize: 18,
+  },
+  otpFilled: {
+    borderColor: '#4F7D4F',
+  },
+  footer: {
+    marginTop: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  footerText: {
+    textAlign: 'center',
     fontSize: 13,
+    color: '#6B7280',
+  },
+  register: {
     color: '#2563EB',
     fontWeight: '600',
   },
-
-  bottomImageContainer: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
-
-  bottomImage: {
-    width: '85%',
-    height: 160,
+  trust: {
+    marginTop: 20,
+    fontSize: 12,
+    color: '#9CA3AF',
   },
 });

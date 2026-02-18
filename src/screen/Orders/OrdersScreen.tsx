@@ -1,376 +1,343 @@
-import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Pressable,
+  TextInput,
+  StatusBar,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
-const orders = [
+type OrderStatus = 'delivered' | 'outForDelivery' | 'cancelled';
+
+interface Order {
+  id: string;
+  orderId: string;
+  productName: string;
+  date: string;
+  status: OrderStatus;
+  imageUrl: string;
+}
+
+const mockOrders: Order[] = [
   {
     id: '1',
-    title: 'Fresh Cow Milk 1L x 2',
-    status: 'Delivered',
-    date: 'Delivered on Feb 14',
-    image:
-      'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=70',
+    orderId: 'ORD-2024-001',
+    productName: 'Fresh Organic Vegetables',
+    date: 'Feb 15, 2026',
+    status: 'delivered',
+    imageUrl:
+      'https://images.unsplash.com/photo-1657288649124-b80bdee3c17e',
   },
   {
     id: '2',
-    title: 'A4 Notebook Pack',
-    status: 'Out for Delivery',
-    date: 'Expected today',
-    image:
-      'https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=600&q=70',
+    orderId: 'ORD-2024-002',
+    productName: 'Fresh Fruits Basket',
+    date: 'Feb 16, 2026',
+    status: 'outForDelivery',
+    imageUrl:
+      'https://images.unsplash.com/photo-1603403887668-a23fbcd4d8be',
   },
   {
     id: '3',
-    title: 'Tomatoes 1kg + Spinach',
-    status: 'Placed',
-    date: 'Arriving tomorrow',
-    image:
-      'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=70',
+    orderId: 'ORD-2024-004',
+    productName: 'Fresh Artisan Bread',
+    date: 'Feb 14, 2026',
+    status: 'cancelled',
+    imageUrl:
+      'https://images.unsplash.com/photo-1555932450-31a8aec2adf1',
   },
 ];
 
 export default function OrdersScreen() {
   const navigation = useNavigation<any>();
+  const [activeFilter, setActiveFilter] =
+    useState<'all' | OrderStatus>('all');
+
+  const filteredOrders = mockOrders.filter(order =>
+    activeFilter === 'all'
+      ? true
+      : order.status === activeFilter
+  );
+
+  const getStatusStyle = (status: OrderStatus) => {
+    switch (status) {
+      case 'delivered':
+        return {
+          backgroundColor: '#E6F4F1',
+          color: '#1E8F66',
+        };
+      case 'outForDelivery':
+        return {
+          backgroundColor: '#FEF9C3',
+          color: '#854D0E',
+        };
+      case 'cancelled':
+        return {
+          backgroundColor: '#FEE2E2',
+          color: '#EF4444',
+        };
+    }
+  };
 
   return (
-    <View style={styles.mainContainer}>
-      <SafeAreaView style={styles.safeAreaTop} edges={['top']} />
+    <View style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#1E8F66"
+      />
 
-      <SafeAreaView style={styles.safeAreaBottom} edges={['left', 'right', 'bottom']}>
-        
-        {/* Header */}
-        <View style={styles.headerContainer}>
-          <View style={styles.headerContent}>
-            <View style={styles.locationRow}>
-              <Image
-                source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/marker.png' }}
-                style={styles.locationIcon}
-              />
-              <View>
-                <Text style={styles.brandTitle}>Smart Bazzar</Text>
-                <Text style={styles.locationText}>
-                  B-12, Green Avenue, High Park
-                </Text>
-              </View>
+      {/* HEADER */}
+      <SafeAreaView style={styles.header}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.deliveryText}>
+              Delivery in 15 mins
+            </Text>
+            <Text style={styles.addressText}>
+              Home - 123 Green Street
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <View style={styles.avatar}>
+              <Text style={{ color: '#1E8F66' }}>JD</Text>
             </View>
-
-            <Image
-              source={{
-                uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-              }}
-              style={styles.userAvatar}
-            />
-          </View>
-
-          {/* Search Visual */}
-          <View style={styles.searchBarVisual}>
-            <Image
-              source={{ uri: 'https://img.icons8.com/ios-glyphs/30/9ca3af/search--v1.png' }}
-              style={styles.searchIcon}
-            />
-            <Text style={styles.searchText}>Search orders...</Text>
-          </View>
+          </Pressable>
         </View>
 
-        {/* Orders List */}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Text style={styles.sectionTitle}>Recent Orders</Text>
+        {/* Search */}
+        <View style={styles.searchBar}>
+          <TextInput
+            placeholder="Search for orders..."
+            placeholderTextColor="#9CA3AF"
+            style={styles.searchInput}
+          />
+        </View>
+      </SafeAreaView>
 
-          {orders.map(item => (
-            <View key={item.id} style={styles.orderCard}>
-              <Image source={{ uri: item.image }} style={styles.orderImage} />
-
-              <View style={styles.orderBody}>
-                <Text style={styles.orderTitle} numberOfLines={1}>
-                  {item.title}
-                </Text>
-
-                <Text style={styles.orderDate}>{item.date}</Text>
-
+      {/* CONTENT */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* FILTER CHIPS */}
+        <View style={styles.filterRow}>
+          {['all', 'delivered', 'outForDelivery', 'cancelled'].map(
+            item => (
+              <Pressable
+                key={item}
+                onPress={() =>
+                  setActiveFilter(
+                    item as 'all' | OrderStatus
+                  )
+                }
+                style={[
+                  styles.filterChip,
+                  activeFilter === item &&
+                    styles.activeChip,
+                ]}
+              >
                 <Text
                   style={[
-                    styles.orderStatus,
-                    item.status === 'Delivered'
-                      ? styles.delivered
-                      : item.status === 'Out for Delivery'
-                      ? styles.outForDelivery
-                      : styles.placed,
+                    styles.filterText,
+                    activeFilter === item &&
+                      styles.activeChipText,
                   ]}
                 >
-                  {item.status}
+                  {item}
                 </Text>
+              </Pressable>
+            )
+          )}
+        </View>
+
+        {/* ORDERS */}
+        {filteredOrders.map(order => {
+          const statusStyle = getStatusStyle(
+            order.status
+          );
+
+          return (
+            <Pressable
+              key={order.id}
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate(
+                  'OrderDetails',
+                  { orderId: order.id }
+                )
+              }
+            >
+              <Image
+                source={{ uri: order.imageUrl }}
+                style={styles.image}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>
+                  {order.productName}
+                </Text>
+                <Text style={styles.subText}>
+                  {order.date} • {order.orderId}
+                </Text>
+
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor:
+                        statusStyle.backgroundColor,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: statusStyle.color,
+                      fontSize: 12,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {order.status}
+                  </Text>
+                </View>
               </View>
 
               <Text style={styles.arrow}>›</Text>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Bottom Navigation */}
-        <View style={styles.bottomNavWrapper}>
-          <View style={styles.bottomNav}>
-            
-            <Pressable
-              style={styles.navItem}
-              onPress={() => navigation.navigate('Home')}
-            >
-              <Image
-                source={{
-                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/home.png',
-                }}
-                style={styles.navIconImage}
-              />
-              <Text style={styles.navText}>Home</Text>
             </Pressable>
+          );
+        })}
 
-            <Pressable
-              style={styles.navItem}
-              onPress={() => navigation.navigate('Categories')}
-            >
-              <Image
-                source={{
-                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/categorize.png',
-                }}
-                style={styles.navIconImage}
-              />
-              <Text style={styles.navText}>Categories</Text>
-            </Pressable>
-
-            <View style={styles.navItem}>
-              <Image
-                source={{
-                  uri: 'https://img.icons8.com/fluency-systems-filled/96/1E8F66/purchase-order.png',
-                }}
-                style={styles.navIconImage}
-              />
-              <Text style={[styles.navText, styles.navActive]}>
-                Orders
-              </Text>
-            </View>
-
-            <Pressable
-              style={styles.navItem}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              <Image
-                source={{
-                  uri: 'https://img.icons8.com/fluency-systems-regular/96/6b7280/user-male-circle.png',
-                }}
-                style={styles.navIconImage}
-              />
-              <Text style={styles.navText}>Profile</Text>
-            </Pressable>
-
-          </View>
-        </View>
-
-      </SafeAreaView>
+        <View style={{ height: 100 }} />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: '#1E8F66',
-  },
-
-  safeAreaTop: {
-    flex: 0,
-    backgroundColor: '#1E8F66',
-  },
-
-  safeAreaBottom: {
+  container: {
     flex: 1,
     backgroundColor: '#F4F5F3',
   },
 
-  headerContainer: {
+  header: {
     backgroundColor: '#1E8F66',
     paddingHorizontal: 16,
-    paddingBottom: 22,
-    paddingTop: 8,
+    paddingBottom: 20,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
 
-  headerContent: {
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
 
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  locationIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 8,
-  },
-
-  brandTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-
-  locationText: {
+  deliveryText: {
+    color: '#A5D6C4',
     fontSize: 12,
-    color: '#E6F4EF',
-    fontWeight: '500',
   },
 
-  userAvatar: {
+  addressText: {
+    color: '#FFF',
+    fontWeight: '700',
+  },
+
+  avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-
-  searchBarVisual: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
     alignItems: 'center',
   },
 
-  searchIcon: {
-    width: 18,
-    height: 18,
-    marginRight: 8,
+  searchBar: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    justifyContent: 'center',
   },
 
-  searchText: {
-    color: '#9ca3af',
+  searchInput: {
     fontSize: 14,
   },
 
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 120,
+    padding: 16,
   },
 
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#177351',
+  filterRow: {
+    flexDirection: 'row',
     marginBottom: 16,
   },
 
-  orderCard: {
-    backgroundColor: '#ffffff',
+  filterChip: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+
+  activeChip: {
+    backgroundColor: '#1E8F66',
+  },
+
+  filterText: {
+    color: '#1F2937',
+  },
+
+  activeChipText: {
+    color: '#FFF',
+  },
+
+  card: {
+    backgroundColor: '#FFF',
     borderRadius: 16,
     padding: 12,
-    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
     elevation: 3,
   },
 
-  orderImage: {
-    width: 80,
-    height: 80,
+  image: {
+    width: 70,
+    height: 70,
     borderRadius: 12,
-    marginRight: 14,
+    marginRight: 12,
   },
 
-  orderBody: {
-    flex: 1,
-  },
-
-  orderTitle: {
-    fontSize: 16,
+  title: {
     fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#1F2937',
   },
 
-  orderDate: {
+  subText: {
     fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 8,
+    color: '#6B7280',
+    marginBottom: 6,
   },
 
-  orderStatus: {
+  statusBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    paddingVertical: 4,
+    borderRadius: 20,
     alignSelf: 'flex-start',
   },
 
-  delivered: {
-    backgroundColor: '#dcfce7',
-    color: '#166534',
-  },
-
-  outForDelivery: {
-    backgroundColor: '#fef9c3',
-    color: '#854d0e',
-  },
-
-  placed: {
-    backgroundColor: '#eff6ff',
-    color: '#1d4ed8',
-  },
-
   arrow: {
-    fontSize: 24,
-    color: '#d1d5db',
-    marginLeft: 6,
-  },
-
-  bottomNavWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 20,
-    alignItems: 'center',
-  },
-
-  bottomNav: {
-    backgroundColor: '#ffffff',
-    width: '92%',
-    borderRadius: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 12,
-    elevation: 8,
-  },
-
-  navItem: {
-    alignItems: 'center',
-  },
-
-  navIconImage: {
-    width: 24,
-    height: 24,
-    marginBottom: 4,
-  },
-
-  navText: {
-    fontSize: 11,
-    color: '#9ca3af',
-    fontWeight: '500',
-  },
-
-  navActive: {
-    color: '#1E8F66',
-    fontWeight: '700',
+    fontSize: 20,
+    color: '#C4C4C4',
   },
 });
