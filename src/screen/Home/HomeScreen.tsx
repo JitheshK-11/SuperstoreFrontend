@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -56,8 +56,61 @@ const bestSellers = [
   },
 ];
 
+const banners = [
+  {
+    id: '1',
+    label: 'LIMITED OFFER',
+    discount: '50% OFF',
+    subtitle: 'on Fresh Fruits',
+    validity: 'Offer valid till midnight',
+    image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80',
+    backgroundColor: '#F25F5C',
+  },
+  {
+    id: '2',
+    label: 'FLASH SALE',
+    discount: '40% OFF',
+    subtitle: 'on Daily Essentials',
+    validity: 'Ends tonight at 11:59 PM',
+    image: 'https://images.unsplash.com/photo-1584473457493-17c4df25217c?auto=format&fit=crop&w=400&q=80',
+    backgroundColor: '#F59E0B',
+  },
+  {
+    id: '3',
+    label: 'MEGA DEAL',
+    discount: '30% OFF',
+    subtitle: 'on Snacks & Beverages',
+    validity: 'Weekend special deal',
+    image: 'https://images.unsplash.com/photo-1604719312566-8912e9c8a213?auto=format&fit=crop&w=400&q=80',
+    backgroundColor: '#10B981',
+  },
+];
+
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const bannerScrollRef = useRef<ScrollView>(null);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const bannerWidth = width;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) => {
+        const nextIndex = (prev + 1) % banners.length;
+        bannerScrollRef.current?.scrollTo({
+          x: nextIndex * bannerWidth,
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [bannerWidth]);
+
+  const handleBannerScrollEnd = (event: any) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / bannerWidth);
+    setActiveBannerIndex(index);
+  };
 
   return (
     <View style={styles.container}>
@@ -108,19 +161,42 @@ export default function HomeScreen() {
         bounces={true}
       >
         {/* Offer Banner */}
-        <View style={styles.bannerContainer}>
-            <View style={styles.bannerTextContainer}>
-                <View style={styles.limitedOfferBadge}>
-                    <Text style={styles.limitedOfferText}>LIMITED OFFER</Text>
+        <View>
+          <ScrollView
+            ref={bannerScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleBannerScrollEnd}
+            style={styles.bannerCarousel}
+          >
+            {banners.map((banner) => (
+              <View key={banner.id} style={styles.bannerSlide}>
+                <View style={[styles.bannerContainer, { backgroundColor: banner.backgroundColor }]}>
+                  <View style={styles.bannerTextContainer}>
+                    <View style={styles.limitedOfferBadge}>
+                      <Text style={styles.limitedOfferText}>{banner.label}</Text>
+                    </View>
+                    <Text style={styles.discountText}>{banner.discount}</Text>
+                    <Text style={styles.bannerSubText}>{banner.subtitle}</Text>
+                    <Text style={styles.validityText}>{banner.validity}</Text>
+                  </View>
+                  <Image source={{ uri: banner.image }} style={styles.bannerImage} />
                 </View>
-                <Text style={styles.discountText}>50% OFF</Text>
-                <Text style={styles.bannerSubText}>on Fresh Fruits</Text>
-                <Text style={styles.validityText}>Offer valid till midnight</Text>
-            </View>
-            <Image 
-                source={{uri: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80'}} 
-                style={styles.bannerImage}
-            />
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.bannerDotsContainer}>
+            {banners.map((banner, index) => (
+              <View
+                key={banner.id}
+                style={[
+                  styles.bannerDot,
+                  activeBannerIndex === index && styles.bannerDotActive,
+                ]}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Categories Grid */}
@@ -319,15 +395,36 @@ const styles = StyleSheet.create({
   
   // Banner
   bannerContainer: {
-    marginHorizontal: 16,
-    backgroundColor: '#F25F5C', // Red/Pink accent for offer
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
     height: 150,
     overflow: 'hidden',
+    width: width - 32,
+  },
+  bannerSlide: {
+    width,
+    alignItems: 'center',
+  },
+  bannerCarousel: {
+    marginBottom: 10,
+  },
+  bannerDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  bannerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    backgroundColor: '#D1D5DB',
+  },
+  bannerDotActive: {
+    width: 18,
+    backgroundColor: '#1E8F66',
   },
   bannerTextContainer: {
     flex: 1,
