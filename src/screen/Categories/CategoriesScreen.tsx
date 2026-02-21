@@ -157,8 +157,17 @@ export default function CategoriesScreen() {
           <Pressable
             style={styles.card}
             onPress={() =>
-              navigation.navigate('CategoryProducts', {
-                category: item.title,
+              navigation.navigate('ProductDetails', {
+                product: {
+                  id: item.id,
+                  name: item.title,
+                  image: item.image,
+                  price: '₹199',
+                  rating: '4.7',
+                  reviews: 'Based on 120 reviews',
+                  description: `Fresh picks from ${item.title}.`,
+                  seller: 'Smart Bazzar',
+                },
               })
             }
           >
@@ -208,7 +217,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#086830',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

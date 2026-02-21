@@ -126,7 +126,12 @@ export default function HomeScreen() {
         {/* Categories Grid */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Categories</Text>
-          <Text style={styles.viewAllText}>View All {'>'}</Text>
+          <Text
+            style={styles.viewAllText}
+            onPress={() => navigation.navigate('Categories')}
+          >
+            View All {'>'}
+          </Text>
         </View>
         
         <View style={styles.categoriesGrid}>
@@ -384,6 +389,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#1E8F66', // Primary Green
     fontWeight: '600',
+    
   },
 
   // Categories Grid
